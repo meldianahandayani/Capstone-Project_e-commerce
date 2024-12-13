@@ -1,12 +1,16 @@
-// src/components/ProductList.jsx
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { fetchProducts } from "../redux/productSlice";
 
-const ProductList = ({ onShowDetails, onAddToCart }) => {
+const ProductList = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const products = useSelector((state) => state.products.items);
   const status = useSelector((state) => state.products.status);
+
+  const token = localStorage.getItem("token"); // Get token from localStorage
 
   useEffect(() => {
     if (status === "idle") {
@@ -21,6 +25,22 @@ const ProductList = ({ onShowDetails, onAddToCart }) => {
   if (status === "failed") {
     return <p>Failed to load products.</p>;
   }
+
+  // Fungsi untuk navigasi ke detail produk
+  const showDetails = (product) => {
+    navigate(`/products/${product.id}`);
+  };
+
+  // Fungsi untuk menambahkan produk ke keranjang
+  const addToCart = (product) => {
+    if (!token) {
+      // Redirect to login page if not logged in
+      navigate("/login");
+    } else {
+      alert(`Added ${product.title} to cart!`);
+      // You would typically dispatch an action to add the product to the cart here
+    }
+  };
 
   return (
     <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -64,7 +84,7 @@ const ProductList = ({ onShowDetails, onAddToCart }) => {
                 borderRadius: "5px",
                 cursor: "pointer",
               }}
-              onClick={() => onShowDetails(product)}
+              onClick={() => showDetails(product)}
             >
               Details
             </button>
@@ -77,7 +97,7 @@ const ProductList = ({ onShowDetails, onAddToCart }) => {
                 borderRadius: "5px",
                 cursor: "pointer",
               }}
-              onClick={() => onAddToCart(product)}
+              onClick={() => addToCart(product)}
             >
               Add to Cart
             </button>
