@@ -1,18 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart } from "../redux/cartSlice";
 
 const ProductDetail = () => {
-  const { id } = useParams(); // Ambil parameter id dari URL
+  const { id } = useParams();
   const navigate = useNavigate();
-
-  // Cari produk berdasarkan id
+  const dispatch = useDispatch();
   const product = useSelector((state) =>
     state.products.items.find((item) => item.id === Number(id))
   );
 
   const status = useSelector((state) => state.products.status);
-
+  const [quantity, setQuantity] = useState(1);
   if (status === "loading") {
     return <p>Loading product details...</p>;
   }
@@ -24,9 +24,39 @@ const ProductDetail = () => {
   if (!product) {
     return <p>Product not found.</p>;
   }
+  const handleAddToCart = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    if (quantity > product.quantity) {
+      alert(
+        `Insufficient stock. ${product.title} has only ${product.quantity} items left.`
+      );
+      return;
+    }
+    dispatch(
+      addToCart({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        image: product.image,
+        quantity: quantity,
+      })
+    );
+    alert(`Added "${product.title}" (${quantity}) to cart!`);
+  };
+  const handleQuantityChange = (e) => {
+    const newQuantity = parseInt(e.target.value, 10);
+    if (newQuantity > product.quantity) {
+      alert(
+        `Insufficient stock. ${product.title} has only ${product.quantity} items left.`
+      );
+      return;
+    }
 
-  const addToCart = () => {
-    alert(`Added ${product.title} to cart!`);
+    setQuantity(newQuantity || 1);
   };
 
   return (
@@ -39,7 +69,7 @@ const ProductDetail = () => {
           alignItems: "flex-start",
         }}
       >
-        {/* Bagian gambar */}
+        {/* gambar produk */}
         <img
           src={product.image}
           alt={product.title}
@@ -52,7 +82,7 @@ const ProductDetail = () => {
           }}
         />
 
-        {/* Bagian detail produk */}
+        {/* detail produk */}
         <div style={{ flex: 1 }}>
           <h2>{product.title}</h2>
           <p style={{ fontStyle: "italic", color: "#555" }}>
@@ -62,7 +92,21 @@ const ProductDetail = () => {
           <p style={{ fontWeight: "bold", fontSize: "18px" }}>
             Price: ${product.price}
           </p>
+          <p style={styles.stock}>Stock: {product.quantity}</p> {}
           <div style={{ marginTop: "20px" }}>
+            {}
+            <input
+              type="number"
+              value={quantity}
+              min="1"
+              max={product.quantity}
+              onChange={handleQuantityChange} // Menangani perubahan input quantity
+              style={{
+                padding: "5px",
+                marginRight: "10px",
+                width: "60px",
+              }}
+            />
             <button
               style={{
                 padding: "10px 15px",
@@ -73,7 +117,7 @@ const ProductDetail = () => {
                 cursor: "pointer",
                 marginRight: "10px",
               }}
-              onClick={addToCart}
+              onClick={handleAddToCart}
             >
               Add to Cart
             </button>
@@ -95,6 +139,14 @@ const ProductDetail = () => {
       </div>
     </div>
   );
+};
+const styles = {
+  stock: {
+    marginTop: "10px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#333",
+  },
 };
 
 export default ProductDetail;

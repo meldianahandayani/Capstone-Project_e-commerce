@@ -1,25 +1,44 @@
-// src/redux/productSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+const savedProducts = JSON.parse(localStorage.getItem("products")) || [];
 
-// Fetch data dari API
 export const fetchProducts = createAsyncThunk(
   "products/fetchProducts",
   async () => {
     const response = await fetch("https://fakestoreapi.com/products");
     const data = await response.json();
-    // Tambahkan quantity default 20 untuk setiap produk
-    return data.map((product) => ({ ...product, quantity: 20 }));
+    const updatedData = data.map((product) => ({ ...product, quantity: 20 }));
+    localStorage.setItem("products", JSON.stringify(updatedData));
+
+    return updatedData;
   }
 );
 
 const productSlice = createSlice({
   name: "products",
   initialState: {
-    items: [],
-    status: "idle", // idle | loading | succeeded | failed
+    items: savedProducts,
+    status: "idle",
     error: null,
   },
-  reducers: {},
+  reducers: {
+    updateProductStock: (state, action) => {
+      const { id, quantity } = action.payload;
+      const product = state.items.find((item) => item.id === id);
+      if (product) {
+        product.quantity -= quantity;
+        if (product.quantity < 0) product.quantity = 0;
+        localStorage.setItem("products", JSON.stringify(state.items));
+      }
+    },
+    restoreProductStock: (state, action) => {
+      const { id, quantity } = action.payload;
+      const product = state.items.find((item) => item.id === id);
+      if (product) {
+        product.quantity += quantity;
+        localStorage.setItem("products", JSON.stringify(state.items));
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
@@ -28,6 +47,7 @@ const productSlice = createSlice({
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.items = action.payload;
+        localStorage.setItem("products", JSON.stringify(action.payload));
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = "failed";
@@ -36,4 +56,5 @@ const productSlice = createSlice({
   },
 });
 
+export const { updateProductStock, restoreProductStock } = productSlice.actions;
 export default productSlice.reducer;
