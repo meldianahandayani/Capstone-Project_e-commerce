@@ -6,7 +6,7 @@ import { updateProductStock } from "../redux/productSlice";
 import { addOrder } from "../redux/orderSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ConfirmationDialog from "../components/ConfirmationDialog"; // Import dialog konfirmasi
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const MyCart = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,7 @@ const MyCart = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const products = useSelector((state) => state.products.items);
 
-  const [showDialog, setShowDialog] = useState(false); // State untuk menampilkan dialog
+  const [showDialog, setShowDialog] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
@@ -88,13 +88,13 @@ const MyCart = () => {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/"); // Redirect ke halaman utama
+      navigate("/");
     }
   };
 
   const confirmCheckout = () => {
-    setShowDialog(false); // Tutup dialog
-    handleCheckout(); // Lanjutkan proses checkout
+    setShowDialog(false);
+    handleCheckout();
   };
 
   if (cartItems.length === 0) {
@@ -167,13 +167,13 @@ const MyCart = () => {
           </button>
           <button
             style={styles.checkoutButton}
-            onClick={() => setShowDialog(true)} // Tampilkan dialog konfirmasi
+            onClick={() => setShowDialog(true)}
           >
             Checkout
           </button>
           <button
             style={styles.orderButton}
-            onClick={() => navigate("/my-order")} // Kembali ke halaman My Order
+            onClick={() => navigate("/my-order")}
           >
             My Order
           </button>
@@ -184,7 +184,7 @@ const MyCart = () => {
         <ConfirmationDialog
           message="Are you sure you want to proceed with checkout?"
           onConfirm={confirmCheckout}
-          onCancel={() => setShowDialog(false)} // Tutup dialog jika batal
+          onCancel={() => setShowDialog(false)}
         />
       )}
     </div>
