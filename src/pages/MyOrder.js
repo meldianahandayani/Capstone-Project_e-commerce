@@ -1,22 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { removeOrder } from "../redux/orderSlice";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import ConfirmationDialog from "../components/ConfirmationDialog"; // Import komponen dialog
 
 const MyOrder = () => {
-  const orders = useSelector((state) => state.order.orders); // Ambil data pesanan dari Redux
+  const orders = useSelector((state) => state.order.orders);
   const dispatch = useDispatch();
 
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+
   const handleRemoveOrder = (orderId) => {
-    const order = orders.find((order) => order.id === orderId);
-    if (!order) return;
+    setSelectedOrderId(orderId);
+    setShowDialog(true); // Tampilkan dialog konfirmasi
+  };
 
-    if (
-      window.confirm("Are you sure you want to remove this order from history?")
-    ) {
-      dispatch(removeOrder(orderId));
+  const confirmRemoveOrder = () => {
+    dispatch(removeOrder(selectedOrderId));
+    setShowDialog(false); // Sembunyikan dialog
+    toast.success("Order removed from history.", {
+      position: "top-right",
+      autoClose: 3000,
+    });
+  };
 
-      alert("Order removed from history.");
-    }
+  const cancelRemoveOrder = () => {
+    setShowDialog(false); // Tutup dialog tanpa aksi
   };
 
   const calculateTotalPrice = (items) => {
@@ -30,6 +41,7 @@ const MyOrder = () => {
       <div style={styles.container}>
         <h1>My Orders</h1>
         <p>You do not have any orders in your history.</p>
+        <ToastContainer />
       </div>
     );
   }
@@ -76,6 +88,14 @@ const MyOrder = () => {
           </div>
         );
       })}
+      <ToastContainer />
+      {showDialog && (
+        <ConfirmationDialog
+          message="Are you sure you want to remove this order from history?"
+          onConfirm={confirmRemoveOrder}
+          onCancel={cancelRemoveOrder}
+        />
+      )}
     </div>
   );
 };

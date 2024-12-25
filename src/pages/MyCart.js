@@ -1,9 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateCartQuantity, removeFromCart } from "../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
 import { updateProductStock } from "../redux/productSlice";
 import { addOrder } from "../redux/orderSlice";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import ConfirmationDialog from "../components/ConfirmationDialog"; // Import dialog konfirmasi
 
 const MyCart = () => {
   const dispatch = useDispatch();
@@ -12,7 +15,8 @@ const MyCart = () => {
   const cartItems = useSelector((state) => state.cart.items);
   const products = useSelector((state) => state.products.items);
 
-  // Simpan keranjang ke localStorage setiap kali cartItems berubah
+  const [showDialog, setShowDialog] = useState(false); // State untuk menampilkan dialog
+
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
@@ -26,11 +30,17 @@ const MyCart = () => {
   const handleQuantityChange = (id, newQuantity) => {
     const product = products.find((product) => product.id === id);
     if (newQuantity < 1) {
-      alert("Quantity cannot be less than 1.");
+      toast.error("Quantity cannot be less than 1.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       return;
     }
     if (newQuantity > product.quantity) {
-      alert(`Insufficient stock. ${product.quantity} items left.`);
+      toast.error(`Insufficient stock. ${product.quantity} items left.`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
       newQuantity = product.quantity;
     }
     dispatch(updateCartQuantity({ id, quantity: newQuantity }));
@@ -38,6 +48,10 @@ const MyCart = () => {
 
   const handleRemove = (id) => {
     dispatch(removeFromCart(id));
+    toast.success("Item removed from cart.", {
+      position: "top-right",
+      autoClose: 3000,
+    });
   };
 
   const handleCheckout = () => {
@@ -46,7 +60,10 @@ const MyCart = () => {
     cartItems.forEach((item) => {
       const product = products.find((product) => product.id === item.id);
       if (product.quantity < item.quantity) {
-        alert(`Insufficient stock for products: ${product.title}.`);
+        toast.error(`Insufficient stock for product: ${product.title}.`, {
+          position: "top-right",
+          autoClose: 3000,
+        });
         isStockAvailable = false;
       }
     });
@@ -59,7 +76,6 @@ const MyCart = () => {
       };
 
       dispatch(addOrder(newOrder));
-      // Kurangi stok produk
       cartItems.forEach((item) => {
         const product = products.find((product) => product.id === item.id);
         if (product.quantity >= item.quantity) {
@@ -68,9 +84,17 @@ const MyCart = () => {
           );
         }
       });
-      alert("Checkout success!");
+      toast.success("Checkout successful!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       navigate("/"); // Redirect ke halaman utama
     }
+  };
+
+  const confirmCheckout = () => {
+    setShowDialog(false); // Tutup dialog
+    handleCheckout(); // Lanjutkan proses checkout
   };
 
   if (cartItems.length === 0) {
@@ -81,6 +105,7 @@ const MyCart = () => {
         <button style={styles.backButton} onClick={() => navigate("/")}>
           Go to Shop
         </button>
+        <ToastContainer />
       </div>
     );
   }
@@ -140,17 +165,28 @@ const MyCart = () => {
           <button style={styles.closeButton} onClick={() => navigate("/")}>
             Close
           </button>
-          <button style={styles.checkoutButton} onClick={handleCheckout}>
+          <button
+            style={styles.checkoutButton}
+            onClick={() => setShowDialog(true)} // Tampilkan dialog konfirmasi
+          >
             Checkout
           </button>
           <button
             style={styles.orderButton}
-            onClick={() => navigate("/my-order")}
+            onClick={() => navigate("/my-order")} // Kembali ke halaman My Order
           >
             My Order
           </button>
         </div>
       </div>
+      <ToastContainer />
+      {showDialog && (
+        <ConfirmationDialog
+          message="Are you sure you want to proceed with checkout?"
+          onConfirm={confirmCheckout}
+          onCancel={() => setShowDialog(false)} // Tutup dialog jika batal
+        />
+      )}
     </div>
   );
 };

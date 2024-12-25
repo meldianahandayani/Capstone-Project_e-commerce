@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchProducts } from "../redux/productSlice";
 import { addToCart } from "../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProductList = () => {
   const dispatch = useDispatch();
@@ -40,7 +42,15 @@ const ProductList = () => {
           quantity: 1,
         })
       );
-      alert(`Added "${product.title}" to cart!`);
+      toast.success(`Added "${product.title}" to cart!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
 
@@ -69,6 +79,7 @@ const ProductList = () => {
           </div>
         ))}
       </div>
+      <ToastContainer />
     </div>
   );
 };
@@ -108,10 +119,6 @@ const styles = {
   price: {
     fontWeight: "bold",
     color: "#007bff",
-  },
-  stock: {
-    fontSize: "14px",
-    color: "#555",
   },
   buttons: {
     display: "flex",
