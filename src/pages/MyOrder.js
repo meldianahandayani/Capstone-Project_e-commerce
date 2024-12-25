@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { removeOrder } from "../redux/orderSlice";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ConfirmationDialog from "../components/ConfirmationDialog"; // Import komponen dialog
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const MyOrder = () => {
   const orders = useSelector((state) => state.order.orders);
@@ -14,12 +14,12 @@ const MyOrder = () => {
 
   const handleRemoveOrder = (orderId) => {
     setSelectedOrderId(orderId);
-    setShowDialog(true); // Tampilkan dialog konfirmasi
+    setShowDialog(true);
   };
 
   const confirmRemoveOrder = () => {
     dispatch(removeOrder(selectedOrderId));
-    setShowDialog(false); // Sembunyikan dialog
+    setShowDialog(false);
     toast.success("Order removed from history.", {
       position: "top-right",
       autoClose: 3000,
@@ -27,7 +27,7 @@ const MyOrder = () => {
   };
 
   const cancelRemoveOrder = () => {
-    setShowDialog(false); // Tutup dialog tanpa aksi
+    setShowDialog(false);
   };
 
   const calculateTotalPrice = (items) => {
